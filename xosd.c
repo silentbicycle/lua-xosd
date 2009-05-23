@@ -10,6 +10,7 @@ static int get_optint_field(lua_State *L, const char* key, int def) {
         int res;
         lua_getfield(L, -1, key);
         res = luaL_optint(L, -1, def);
+        /* printf("%s -> %d (default %d)\n", key, res, def); */
         lua_pop(L, 1);
         return res;
 }
@@ -19,14 +20,17 @@ static int get_optint_field(lua_State *L, const char* key, int def) {
 static const char*
 get_optstring_field(lua_State *L, const char* key, const char* def) {
         lua_getfield(L, -1, key);
+        const char* res;
+
         if (lua_isstring(L, -1)) {
-                const char* res = lua_tostring(L, -1);
+                res = lua_tostring(L, -1);
                 lua_pop(L, 1);
-                return res;
         } else {
+                res = def;
                 lua_pop(L, 1);
-                return def;
         }
+        /* printf("%s -> %s (default %s)\n", key, res, def); */
+        return res;
 }
 
 
@@ -34,42 +38,36 @@ get_optstring_field(lua_State *L, const char* key, const char* def) {
  * Allocation *
  **************/
 
-
 /* Create a new Lua XOSD object.
- * Optional arguments: int -> number of lines, table -> named options.
- * */
+ * Optional argument: a table of settings. */
 static int lx_new(lua_State *L) {
-        int lines = get_line_ct(L);
-        LuaXOSD* d = init_LuaXOSD(L, lines);
+        if (lua_gettop(L) == 0) lua_newtable(L);
 
-        if (!lua_istable(L, -2)) {
-                lua_newtable(L);
-        } else {
-                lua_pushvalue(L, -2);
-        }
-        
-        if (lua_istable(L, -1)) {
-                xosd* x = d->disp;
-                xosd_set_horizontal_offset(x, get_optint_field(L,
-                        "x", LX_DEF_X_OFFSET));
-                xosd_set_vertical_offset(x, get_optint_field(L,
-                        "y", LX_DEF_Y_OFFSET));
-                xosd_set_shadow_offset(x, get_optint_field(L,
-                        "shadow_offset", LX_DEF_SHADOW_OFFSET));
-                xosd_set_timeout(x, get_optint_field(L,
-                        "timeout", LX_DEF_TIMEOUT));
-                xosd_set_font(x, get_optstring_field(L,
-                        "font", LX_DEF_FONT));
-                xosd_set_align(x,
-                    align_of_str(L, get_optstring_field(L,
-                            "align", LX_DEF_ALIGN)));
-                xosd_set_colour(x, get_optstring_field(L,
-                        "colour", LX_DEF_COLOUR));
-        }
+        int lines = get_line_ct(L);             /* s: table */
+        LuaXOSD* d = init_LuaXOSD(L, lines);    /* s: table LuaXOSD */
+        lua_pushvalue(L, -2);                   /* s: table LuaXOSD table */
+        lua_remove(L, -3);                      /* s: LuaXOSD table */
+
+        xosd* x = d->disp;
+        xosd_set_horizontal_offset(x, get_optint_field(L,
+                "x", LX_DEF_X_OFFSET));
+        xosd_set_vertical_offset(x, get_optint_field(L,
+                "y", LX_DEF_Y_OFFSET));
+        xosd_set_shadow_offset(x, get_optint_field(L,
+                "shadow_offset", LX_DEF_SHADOW_OFFSET));
+        xosd_set_timeout(x, get_optint_field(L,
+                "timeout", LX_DEF_TIMEOUT));
+        xosd_set_font(x, get_optstring_field(L,
+                "font", LX_DEF_FONT));
+        xosd_set_align(x,
+            align_of_str(L, get_optstring_field(L,
+                    "align", LX_DEF_ALIGN)));
+        xosd_set_colour(x, get_optstring_field(L,
+                "colour", LX_DEF_COLOUR));
         
         lua_pop(L, 1);
         
-        return 1;               /* osd userdata on stack */
+        return 1;               /* leaving LuaXOSD userdata on stack */
 }
 
 
@@ -77,14 +75,13 @@ static int lx_new(lua_State *L) {
 static int get_line_ct(lua_State *L) {
         int res;
 
-        if (lua_isnumber(L, -1)) {
-                res = lua_tointeger(L, -1);
-        } else if (lua_istable(L, -1)) {
+        if (lua_istable(L, -1)) {
                 lua_getfield(L, -1, "lines");
                 res = luaL_optint(L, -1, 1);
                 lua_pop(L, 1);
         } else {
-                res = 1;
+                lua_pushstring(L, "Error getting line count.");
+                lua_error(L);
         }
         return res;
 }
@@ -160,7 +157,7 @@ static int lx_set_timeout(lua_State *L) {
 }
 
 
-/* Set the color. */
+/* Set the colo(u)r. */
 static int lx_set_colour(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
         const char *col = (const char*) luaL_checkstring(L, 2);
@@ -254,10 +251,8 @@ static int lx_set_pos(lua_State *L) {
  * Displaying *
  **************/
 
-/* One of XOSD_percentage,  XOSD_slider or XOSD_string. */
-
 /* Display a string. */
-static int lx_printstr(lua_State *L) {
+static int lx_display_string(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
         const char *s = (const char*) luaL_checkstring(L, 2);
         int blocking = lua_toboolean(L, 3);
@@ -267,6 +262,34 @@ static int lx_printstr(lua_State *L) {
         return 0;
 }
 
+
+/* Common code for displaying a numeric value. */
+static int lx_display_numeric(lua_State *L, xosd_command command) {
+        LuaXOSD* osd = check_xosd(L);
+        int perc = luaL_checkint(L, 2);
+        if (perc < 0 || perc > 100) {
+                lua_pushstring(L, "Error: Numeric display must be 0 < n < 100.");
+                lua_error(L);
+        }
+
+        int blocking = lua_toboolean(L, 3);
+
+        xosd_display(osd->disp, 0, command, perc);
+        if (blocking) xosd_wait_until_no_display(osd->disp);
+        return 0;
+}
+
+
+/* Display a percentage. */
+static int lx_display_percent(lua_State *L) {
+        return lx_display_numeric(L, XOSD_percentage);
+}
+
+
+/* Display a slider. */
+static int lx_display_slider(lua_State *L) {
+        return lx_display_numeric(L, XOSD_slider);
+}
 
 
 /* Block until done displaying. */
@@ -306,7 +329,9 @@ static int lx_is_onscreen(lua_State *L) {
  ****************/
 
 static const struct luaL_Reg xosd_metatable [] = {
-        { "print", lx_printstr },
+        { "print", lx_display_string },
+        { "print_percent", lx_display_percent },
+        { "print_slider", lx_display_slider },
         { "destroy", lx_destroy },
         { "scroll", lx_scroll },
         { "get_line_ct", lx_get_line_ct },
