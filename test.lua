@@ -26,3 +26,7 @@ x:print_percent(75, true)
 
 x = xosd.new{ colour="blue", timeout=1, shadow_offset = 3 }
 x:print_slider(15, true)
+
+x = xosd.new{ colour="purple", timeout=1, shadow_offset = 3 }
+x:set_pos("Bottom")
+x:print_slider(15, true)

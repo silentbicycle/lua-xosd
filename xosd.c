@@ -236,9 +236,23 @@ static int lx_set_horizontal_offset(lua_State *L) {
 }
 
 
-/* Set position. */
+/* Set position, takes "T", "B", or (x, y). */
 static int lx_set_pos(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
+        if (lua_type(L, -1) == LUA_TSTRING) {
+                const char* pos = lua_tostring(L, -1);
+                if (pos[0] == 'T') {
+                        xosd_set_pos(osd->disp, XOSD_top);
+                        return 0;
+                } else if (pos[0] == 'B') {
+                        xosd_set_pos(osd->disp, XOSD_bottom);
+                        return 0;
+                } else {
+                        lua_pushstring(L, "Position must be T(op), B(ottom), or (x, y).");
+                        lua_error(L);
+                }
+        }
+
         int xo = luaL_checkint(L, 2);
         int yo = luaL_checkint(L, 3);
         xosd_set_horizontal_offset (osd->disp, xo);
