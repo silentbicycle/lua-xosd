@@ -1,22 +1,24 @@
 require "xosd"
 
-function print_and_destroy(s)
-   x = xosd.new()
-   x:set_color("green")
-   x:set_vertical_offset(20)
-   x:set_horizontal_offset(400)
-   x:set_timeout(1)
+x = xosd.new()
+print(x)
+x:print("Blah", true)
 
-   print(x)
+x = xosd.new(3)
+print(x)
+x:set_color("blue")
+x:set_pos(400, 200)
+x:set_font("-*-terminus-medium-*-*-*-24-*-*-*-*-*-*-*")
+x:set_timeout(1)
+x:print("Blah blah", true)
 
-   print("before -- ", x:is_onscreen(x))
-   x:set_font("-*-terminus-medium-*-*-*-12-*-*-*-*-*-*-*")
-   x:print(s)
-   print(x)
-   print("during -- ", x:is_onscreen(x))
-   x:wait(x)
-   print("after -- ", x:is_onscreen(x))
-end
+x = xosd.new{ x=600, y=150, 
+              font="-*-terminus-medium-*-*-*-24-*-*-*-*-*-*-*",
+              timeout=2, shadow_offset=3, align="R", colour="red" }
+x:show()
+x:print("Yea boy!", true)
+print(x)
 
-print_and_destroy"test passed"
-print_and_destroy"yeah, boy! flavor flav!"
+x = xosd.new()
+print(x)
+x:print("Blah", true)

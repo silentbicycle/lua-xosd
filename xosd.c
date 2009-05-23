@@ -5,23 +5,22 @@
 #include "lxosd.h"
 
 
-/* Get an int field, with default. */
+/* Get an int field from the table on top of the stack, with default. */
 static int get_optint_field(lua_State *L, const char* key, int def) {
         int res;
-        lua_getfield(L, 1, key);
-        res = luaL_optint(L, 2, def);
+        lua_getfield(L, -1, key);
+        res = luaL_optint(L, -1, def);
         lua_pop(L, 1);
         return res;
 }
 
 
-/* Get a string field, with default. */
+/* Get a string field from the table on top of the stack, with default. */
 static const char*
 get_optstring_field(lua_State *L, const char* key, const char* def) {
-        lua_getfield(L, 1, key);
-
-        if (lua_isstring(L, 2)) {
-                const char* res = lua_tostring(L, 2);
+        lua_getfield(L, -1, key);
+        if (lua_isstring(L, -1)) {
+                const char* res = lua_tostring(L, -1);
                 lua_pop(L, 1);
                 return res;
         } else {
@@ -43,33 +42,32 @@ static int lx_new(lua_State *L) {
         int lines = get_line_ct(L);
         LuaXOSD* d = init_LuaXOSD(L, lines);
 
-        /* if (!lua_istable(L, 1)) {
-         *         lua_newtable(L);
-         *         /\* lua_pop(L, 1); *\/
-         * }
-         * 
-         * if (lua_istable(L, 1)) {
-         *         xosd* x = d->disp;
-         *         xosd_set_horizontal_offset(x, get_optint_field(L,
-         *                 "x", LX_DEF_X_OFFSET));
-         *         xosd_set_vertical_offset(x, get_optint_field(L,
-         *                 "y", LX_DEF_Y_OFFSET));
-         *         xosd_set_shadow_offset(x, get_optint_field(L,
-         *                 "shadow_offset", LX_DEF_SHADOW_OFFSET));
-         *         xosd_set_timeout(x, get_optint_field(L,
-         *                 "timeout", LX_DEF_TIMEOUT));
-         *         xosd_set_font(x, get_optstring_field(L,
-         *                 "font", LX_DEF_FONT));
-         *         xosd_set_align(x,
-         *             align_of_str(L, get_optstring_field(L,
-         *                     "align", LX_DEF_ALIGN)));
-         *         xosd_set_colour(x, get_optstring_field(L,
-         *                 "colour", LX_DEF_COLOUR));
-         * }
-         * 
-         * printf("Stack height: %d\n", lua_gettop(L));
-         * lua_replace(L, 1);
-         * lua_pop(L, 1); */
+        if (!lua_istable(L, -2)) {
+                lua_newtable(L);
+        } else {
+                lua_pushvalue(L, -2);
+        }
+        
+        if (lua_istable(L, -1)) {
+                xosd* x = d->disp;
+                xosd_set_horizontal_offset(x, get_optint_field(L,
+                        "x", LX_DEF_X_OFFSET));
+                xosd_set_vertical_offset(x, get_optint_field(L,
+                        "y", LX_DEF_Y_OFFSET));
+                xosd_set_shadow_offset(x, get_optint_field(L,
+                        "shadow_offset", LX_DEF_SHADOW_OFFSET));
+                xosd_set_timeout(x, get_optint_field(L,
+                        "timeout", LX_DEF_TIMEOUT));
+                xosd_set_font(x, get_optstring_field(L,
+                        "font", LX_DEF_FONT));
+                xosd_set_align(x,
+                    align_of_str(L, get_optstring_field(L,
+                            "align", LX_DEF_ALIGN)));
+                xosd_set_colour(x, get_optstring_field(L,
+                        "colour", LX_DEF_COLOUR));
+        }
+        
+        lua_pop(L, 1);
         
         return 1;               /* osd userdata on stack */
 }
@@ -77,14 +75,18 @@ static int lx_new(lua_State *L) {
 
 /* Init: Get the line count. */
 static int get_line_ct(lua_State *L) {
-        if (lua_isnumber(L, 1)) {
-                return lua_tointeger(L, 1);
-        } else if (lua_istable(L, 1)) {
-                lua_getfield(L, 1, "lines");
-                return luaL_optint(L, 2, 1);
+        int res;
+
+        if (lua_isnumber(L, -1)) {
+                res = lua_tointeger(L, -1);
+        } else if (lua_istable(L, -1)) {
+                lua_getfield(L, -1, "lines");
+                res = luaL_optint(L, -1, 1);
+                lua_pop(L, 1);
         } else {
-                return 1;
+                res = 1;
         }
+        return res;
 }
 
 
