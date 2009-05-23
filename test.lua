@@ -2,18 +2,20 @@ require "xosd"
 
 function print_and_destroy(s)
    x = xosd.new()
-   xosd.set_color(x, "green")
-   xosd.set_vertical_offset(x, 20)
-   xosd.set_horizontal_offset(x, 400)
-   xosd.set_timeout(x, 1)
+   x:set_color("green")
+   x:set_vertical_offset(20)
+   x:set_horizontal_offset(400)
+   x:set_timeout(1)
 
-   print("before -- ", xosd.is_onscreen(x))
-   xosd.set_font(x, "-*-terminus-medium-*-*-*-12-*-*-*-*-*-*-*")
-   xosd.print(x, s)
-   print("during -- ", xosd.is_onscreen(x))
-   xosd.wait(x)
-   print("after -- ", xosd.is_onscreen(x))
-   xosd.destroy(x)
+   print(x)
+
+   print("before -- ", x:is_onscreen(x))
+   x:set_font("-*-terminus-medium-*-*-*-12-*-*-*-*-*-*-*")
+   x:print(s)
+   print(x)
+   print("during -- ", x:is_onscreen(x))
+   x:wait(x)
+   print("after -- ", x:is_onscreen(x))
 end
 
 print_and_destroy"test passed"

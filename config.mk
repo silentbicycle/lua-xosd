@@ -17,7 +17,7 @@ CC=		cc
 LIB_PATHS=	-L/usr/X11R6/lib/
 LIBS=		-lxosd -lX11
 INC=		-I/usr/X11R6/include/
-CFLAGS=		-shared -fPIC
+CFLAGS=		-Wall -shared -fPIC
 LIBEXT=		.so
 
 
