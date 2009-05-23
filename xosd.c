@@ -10,7 +10,6 @@ static int lx_new(lua_State *L) {
         xosd* osd;
 
         lines = luaL_optint(L, 1, 1);
-        lua_pop(L, 1);
         luaL_argcheck(L, lines >= 1, 1, "invalid line count");
 
         osd = xosd_create(lines);
@@ -26,6 +25,10 @@ static int lx_new(lua_State *L) {
 
         return 1;               /* osd userdata on stack */
 }
+
+
+/* #define checkxosd(L)                                   \
+ *         ((NumArray *)luaL_checkudata(L, 1, "LuaXOSD")) */
 
 
 static xosd* get_top_xosd(lua_State *L) {
@@ -120,6 +123,22 @@ static int lx_set_horizontal_offset(lua_State *L) {
 /* setpos */
 
 
+static const struct luaL_Reg xosd_metatable [] = {
+        {"print", lx_printstr},
+        {"destroy", lx_destroy},
+        {"set_color", lx_set_color},
+        {"set_font", lx_set_font},
+        {"set_timeout", lx_set_timeout},
+        {"set_horizontal_offset", lx_set_horizontal_offset},
+        {"set_vertical_offset", lx_set_vertical_offset},
+        {"show", lx_show},
+        {"hide", lx_hide},
+        {"wait", lx_wait},
+        {"is_onscreen", lx_is_onscreen},
+        { NULL, NULL },
+};        
+
+
 static const struct luaL_Reg lxosdlib[] = {
         {"new", lx_new},
         {"print", lx_printstr},
@@ -133,11 +152,18 @@ static const struct luaL_Reg lxosdlib[] = {
         {"hide", lx_hide},
         {"wait", lx_wait},
         {"is_onscreen", lx_is_onscreen},
-        {NULL, NULL}
+        {NULL, NULL},
 };
 
 
 int luaopen_xosd(lua_State *L) {
+        luaL_newmetatable(L, "LuaXOSD");
+
+        /* metatable.__index -> metatable */
+        lua_pushvalue(L, -1);   /* dup */
+        lua_setfield(L, -2, "__index");
+        luaL_register(L, NULL, xosd_metatable);
+        
         luaL_register(L, "xosd", lxosdlib);
         return 1;
 }
