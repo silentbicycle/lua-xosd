@@ -23,6 +23,8 @@ typedef struct LuaXOSD {
 static int get_optint_field(lua_State *L, const char* key, int def);
 static const char* get_optstring_field(lua_State *L,
     const char* key, const char* def);
+static void error(lua_State *L, const char* str);
+static void err_wrap(lua_State *L, int status, const char* name);
 static int get_line_ct(lua_State *L);
 static LuaXOSD* init_LuaXOSD(lua_State *L, int lines);
 static xosd_align align_of_str(lua_State *L, const char *key);

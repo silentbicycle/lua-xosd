@@ -20,8 +20,9 @@ INC=		-I/usr/X11R6/include/
 CFLAGS=		-Wall
 SHARED=		-shared -fPIC
 LIBEXT=		.so
-LINT=		lint
 
+# Other tools, optional
+LINT=		lint
 
 # Build targets
 LIBNAME=	xosd

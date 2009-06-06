@@ -8,13 +8,17 @@ Building and installation
 -------------------------
 
 In order to build and install lua-xosd, you will need:
-  + Lua and its header files (tested with 5.1.4, 5.x *should* work)
-  + [xosd](http://www.ignavus.net/software.html)
+
+  + [Lua][] and its header files (tested with 5.1.4, 5.x *should* work)
+  + [XOSD][], naturally.
+
+[Lua]: http://lua.org
+[XOSD]: http://www.ignavus.net/software.html
 
 To build, edit the paths in *config.mk* to match your system
 configuration (or replace with one of the provided samples), and
-then type "make". To install, "make install", and to run a test
-suite, "make test".
+then type "make". To run a test suite, "make test". To install, 
+"make install".
 
 
 Usage
@@ -26,6 +30,7 @@ First,
     disp = xosd.new()
 
 new can be passed an optional table with the following settings:
+
   + x and y coordinates ("x", "y")
   + colors ("color", "shadow_color", "outline_color", and all can
            instead be spelled "colour", as a brief nod to i18n.)
@@ -35,6 +40,7 @@ new can be passed an optional table with the following settings:
   + "font" (a name, e.g. "fixed", or xfontsel-style)
   + "align" ("L" / "C" / "R", case insensitive)
 
+
 For example:
 
     osd = xosd.new{ font="-*-helvetica-medium-r-*-*-*-240-*-*-*-*-*-*",
@@ -42,7 +48,9 @@ For example:
                     colour="white", outline_color="DarkSlateGray", 
                     shadow_colour="MediumOrchid", timeout=4, align="c" }
 
+
 The following methods can be used to change those settings later:
+
   + set_align( align )
   + set_colo[u]r( color_name )
   + set_shadow_colo[u]r( color_name )
@@ -55,7 +63,9 @@ The following methods can be used to change those settings later:
   + set_shadow_offset( pixels )
   + set_outline_offset( pixels )
 
+
 Displaying is controlled by the following methods:
+
   + print( string, [blocking] ): 
     if blocking, pause until timeout, otherwise display is asynchronous.
   + print_percent( percent, [blocking] ): percent is between 0 and 100.
@@ -64,16 +74,16 @@ Displaying is controlled by the following methods:
   + hide()
   + wait(): Wait until timeout.
 
+
 Other misc. methods:
   + is_onscreen(): Is it currently on-screen? 
   + scroll( lines )
   + get_line_ct(): Get the number of lines in the display.
 
 
-Most methods return a bool, for whether the operation was successful.
+For usage examples, see *test.lua*.
 
 
 TODO
 ----
-  + Instead of returning bools, use error where appropriate.
   + Document scrolling.
