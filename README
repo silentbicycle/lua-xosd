@@ -1,0 +1,70 @@
+Lua-XOSD
+========
+
+This is a Lua wrapper for the XOSD library.
+
+
+Building and installation
+-------------------------
+
+In order to build and install lua-xosd, you will need:
+  + Lua and its header files (tested with 5.1.4, 5.x *should* work)
+  + [xosd](http://www.ignavus.net/software.html)
+
+To build, edit the paths in *config.mk* to match your system
+configuration (or replace with one of the provided samples), and
+then type "make". To install, "make install", and to run a test
+suite, "make test".
+
+
+Usage
+-----
+
+First,
+
+    require "xosd"
+    disp = xosd.new()
+
+new can be passed an optional table with the following settings:
+  + x and y coordinates ("x", "y")
+  + colors ("color", "shadow_color", "outline_color", and all can
+           instead be spelled "colour", as a brief nod to i18n.)
+           For a color list, see *rgb.txt* in your X distribution.
+  + offsets ("shadow_offset", "outline_offset")
+  + "timeout" (in seconds)
+  + "font" (a name, e.g. "fixed", or xfontsel-style)
+  + "align" ("L" / "C" / "R", case insensitive)
+
+For example:
+
+    osd = xosd.new{ font="-*-helvetica-medium-r-*-*-*-240-*-*-*-*-*-*",
+                    shadow_offset=2, outline_offset=1, 
+                    colour="white", outline_color="DarkSlateGray", 
+                    shadow_colour="MediumOrchid", timeout=4, align="c" }
+
+The following methods can be used to change those settings later:
+  + set_align( align )
+  + set_colo[u]r( color_name )
+  + set_shadow_colo[u]r( color_name )
+  + set_outline_colo[u]r( color_name )
+  + set_font( font_key )
+  + set_timeout( seconds )
+  + set_horizontal_offset( pixels )
+  + set_vertical_offset( pixels )
+  + set_pos( (x, y) OR "Top" OR "Bottom" )
+  + set_shadow_offset( pixels )
+  + set_outline_offset( pixels )
+
+Displaying is controlled by the following methods:
+  + print( string, [blocking] ): 
+    if blocking, pause until timeout, otherwise display is asynchronous.
+  + print_percent( percent, [blocking] ): percent is between 0 and 100.
+  + print_slider( percent, [blocking] )
+  + show()
+  + hide()
+  + wait(): Wait until timeout.
+
+Other misc. methods:
+  + is_onscreen(): Is it currently on-screen? 
+  + scroll( lines )
+  + get_line_ct(): Get the number of lines in the display.
