@@ -3,7 +3,7 @@ include config.mk
 all:	${LIBNAME}${LIBEXT}
 
 clean:
-	@rm -f ${LIBNAME}${LIBEXT}
+	rm -f ${LIBNAME}${LIBEXT}
 
 test: ${LIBNAME}${LIBEXT}
 	${LUA} ${TESTSUITE}
@@ -14,5 +14,9 @@ lint: ${LIBNAME}.c
 install: ${LIBNAME}${LIBEXT}
 	cp ${INST_LIB} ${LUA_DEST_LIB}
 
+uninstall: 
+	rm -f ${LUA_DEST_LIB}${LIBNAME}${LIBEXT}
+
 ${LIBNAME}${LIBEXT}: ${LIBNAME}.c
-	${CC} -o $@ $> ${CFLAGS} ${SHARED} ${LUA_FLAGS} ${INC} ${LIB_PATHS} ${LIBS}
+	${CC} -o $@ $> ${CFLAGS} ${SHARED} ${LUA_FLAGS} \
+	${INC} ${LIB_PATHS} ${LIBS}

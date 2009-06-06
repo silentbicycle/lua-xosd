@@ -170,7 +170,8 @@ static LuaXOSD* init_LuaXOSD(lua_State *L, int lines) {
 /* Destroy xosd pointer, called by __gc. */
 static int lx_destroy(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
-        xosd_destroy(osd->disp);
+        if (osd != NULL && osd->disp != NULL)
+                xosd_destroy(osd->disp);
         return 0;
 }
 
@@ -254,7 +255,7 @@ static int lx_set_shadow_colour(lua_State *L) {
 }
 
 
-/* Set the font. (What does it do with nonexistant fonts?) */
+/* Set the font. (Raises error on invalid fonts.) */
 static int lx_set_font(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
         const char *font = (const char*) luaL_checkstring(L, 2);
@@ -307,7 +308,7 @@ static xosd_align align_of_str(lua_State *L, const char *key) {
 /* Set the alignment. Uses 'L', 'C', 'R'. */
 static int lx_set_align(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
-        const char *key = luaL_checkstring(L, 2); /* L, C, R */
+        const char *key = luaL_checkstring(L, 2);
         xosd_align align = align_of_str(L, key);
 
         err_wrap(L, xosd_set_align(osd->disp, align), "xosd_set_align");

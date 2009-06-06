@@ -41,3 +41,4 @@ x = xosd.new { timeout=3, align="c", color="steelblue", font="fixed",
                shadow_color="black", shadow_offset=1 }
 x:set_pos("Bottom")
 x:print("If you could see those, all tests passed.", true)
+print("If you could see those, all tests passed.")
