@@ -52,9 +52,9 @@ For example:
 The following methods can be used to change those settings later:
 
   + set_align( align )
-  + set_colo[u]r( color_name )
-  + set_shadow_colo[u]r( color_name )
-  + set_outline_colo[u]r( color_name )
+  + set_color( color_name )
+  + set_shadow_color( color_name )
+  + set_outline_color( color_name )
   + set_font( font_key )
   + set_timeout( seconds )
   + set_horizontal_offset( pixels )
