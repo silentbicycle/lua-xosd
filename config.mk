@@ -17,8 +17,10 @@ CC=		cc
 LIB_PATHS=	-L/usr/X11R6/lib/
 LIBS=		-lxosd -lX11
 INC=		-I/usr/X11R6/include/
-CFLAGS=		-Wall -shared -fPIC
+CFLAGS=		-Wall
+SHARED=		-shared -fPIC
 LIBEXT=		.so
+LINT=		lint
 
 
 # Build targets

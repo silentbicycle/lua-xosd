@@ -1,11 +1,9 @@
 require "xosd"
 
 x = xosd.new()
-print(x)
 x:print("no config", true)
 
 x = xosd.new()
-print(x)
 x:set_color("blue")
 x:set_pos(100, 200)
 x:set_font("-*-terminus-medium-*-*-*-24-*-*-*-*-*-*-*")
@@ -19,13 +17,12 @@ x = xosd.new{ x=300, y=100,
               timeout=2, shadow_offset=1, align="l", colour="white",
               lines=3 }
 x:print("table config", true)
-print(x)
 
 x = xosd.new{ colour="red", timeout=1, shadow_offset = 3 }
 x:print_percent(75, true)
 
 x = xosd.new{ colour="blue", timeout=1, shadow_offset = 3 }
-x:print_slider(31)
+x:print_slider(31, false)
 
 x = xosd.new{ colour="purple", timeout=1, shadow_offset = 3 }
 x:set_pos("Bottom")

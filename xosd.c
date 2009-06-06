@@ -19,8 +19,8 @@ static int get_optint_field(lua_State *L, const char* key, int def) {
 /* Get a string field from the table on top of the stack, with default. */
 static const char*
 get_optstring_field(lua_State *L, const char* key, const char* def) {
-        lua_getfield(L, -1, key);
         const char* res;
+        lua_getfield(L, -1, key);
 
         if (lua_isstring(L, -1)) {
                 res = lua_tostring(L, -1);
@@ -41,14 +41,17 @@ get_optstring_field(lua_State *L, const char* key, const char* def) {
 /* Create a new Lua XOSD object.
  * Optional argument: a table of settings. */
 static int lx_new(lua_State *L) {
+        int lines;
+        LuaXOSD* d;
+        xosd* x;
         if (lua_gettop(L) == 0) lua_newtable(L);
 
-        int lines = get_line_ct(L);             /* s: table */
-        LuaXOSD* d = init_LuaXOSD(L, lines);    /* s: table LuaXOSD */
+        lines = get_line_ct(L);             /* s: table */
+        d = init_LuaXOSD(L, lines);    /* s: table LuaXOSD */
         lua_pushvalue(L, -2);                   /* s: table LuaXOSD table */
         lua_remove(L, -3);                      /* s: LuaXOSD table */
 
-        xosd* x = d->disp;
+        x = d->disp;
         xosd_set_horizontal_offset(x, get_optint_field(L,
                 "x", LX_DEF_X_OFFSET));
         xosd_set_vertical_offset(x, get_optint_field(L,
@@ -238,7 +241,9 @@ static int lx_set_horizontal_offset(lua_State *L) {
 
 /* Set position, takes "T", "B", or (x, y). */
 static int lx_set_pos(lua_State *L) {
+        int xo, yo;
         LuaXOSD* osd = check_xosd(L);
+
         if (lua_type(L, -1) == LUA_TSTRING) {
                 const char* pos = lua_tostring(L, -1);
                 if (pos[0] == 'T') {
@@ -253,8 +258,8 @@ static int lx_set_pos(lua_State *L) {
                 }
         }
 
-        int xo = luaL_checkint(L, 2);
-        int yo = luaL_checkint(L, 3);
+        xo = luaL_checkint(L, 2);
+        yo = luaL_checkint(L, 3);
         xosd_set_horizontal_offset (osd->disp, xo);
         xosd_set_vertical_offset (osd->disp, yo);
         return 0;
@@ -281,12 +286,14 @@ static int lx_display_string(lua_State *L) {
 static int lx_display_numeric(lua_State *L, xosd_command command) {
         LuaXOSD* osd = check_xosd(L);
         int perc = luaL_checkint(L, 2);
+        int blocking;
+
         if (perc < 0 || perc > 100) {
                 lua_pushstring(L, "Error: Numeric display must be 0 < n < 100.");
                 lua_error(L);
         }
 
-        int blocking = lua_toboolean(L, 3);
+        blocking = lua_toboolean(L, 3);
 
         xosd_display(osd->disp, 0, command, perc);
         if (blocking) xosd_wait_until_no_display(osd->disp);

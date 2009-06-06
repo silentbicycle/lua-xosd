@@ -1,7 +1,7 @@
 #ifndef LXOSD_H
 #define LXOSD_H
 
-/* Wrap the xosd pointer in a full userdata for garbage collection. */
+/* Wrap the xosd pointer in a full userdata, for garbage collection. */
 typedef struct LuaXOSD {
         xosd* disp;
 } LuaXOSD;
@@ -17,9 +17,15 @@ typedef struct LuaXOSD {
 #define		LX_DEF_COLOUR		"green"
 
 
+static int get_optint_field(lua_State *L, const char* key, int def);
+static const char* get_optstring_field(lua_State *L,
+    const char* key, const char* def);
 static int get_line_ct(lua_State *L);
 static LuaXOSD* init_LuaXOSD(lua_State *L, int lines);
 static xosd_align align_of_str(lua_State *L, const char *key);
+
+/* All direct C<->Lua functions have the type of
+ * static int funcname(lua_State *L) .*/
 
 
 #define check_xosd(L)                                   \
