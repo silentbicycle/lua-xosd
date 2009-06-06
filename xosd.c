@@ -1,4 +1,22 @@
+/* 
+ * Copyright (c) 2009 Scott Vokes <scott@silentbicycle.com>
+ *  
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *  
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+
 #include <stdlib.h>
+#include <string.h>
 #include <xosd.h>
 #include <lua.h>
 #include <lauxlib.h>
@@ -44,20 +62,35 @@ static int lx_new(lua_State *L) {
         int lines;
         LuaXOSD* d;
         xosd* x;
+
         if (lua_gettop(L) == 0) lua_newtable(L);
 
-        lines = get_line_ct(L);             /* s: table */
+        lines = get_line_ct(L);        /* s: table */
         d = init_LuaXOSD(L, lines);    /* s: table LuaXOSD */
-        lua_pushvalue(L, -2);                   /* s: table LuaXOSD table */
-        lua_remove(L, -3);                      /* s: LuaXOSD table */
+        lua_pushvalue(L, -2);          /* s: table LuaXOSD table */
+        lua_remove(L, -3);             /* s: LuaXOSD table */
 
         x = d->disp;
+        set_defaults(L, x);
+
+        lua_pop(L, 1);
+        
+        return 1;               /* leaving LuaXOSD userdata on stack */
+}
+
+
+/* Set the defaults, using config table if provided. */
+static int set_defaults(lua_State *L, xosd* x) {
+        const char* color;
+
         xosd_set_horizontal_offset(x, get_optint_field(L,
                 "x", LX_DEF_X_OFFSET));
         xosd_set_vertical_offset(x, get_optint_field(L,
                 "y", LX_DEF_Y_OFFSET));
         xosd_set_shadow_offset(x, get_optint_field(L,
                 "shadow_offset", LX_DEF_SHADOW_OFFSET));
+        xosd_set_outline_offset(x, get_optint_field(L,
+                "outline_offset", LX_DEF_OUTLINE_OFFSET));
         xosd_set_timeout(x, get_optint_field(L,
                 "timeout", LX_DEF_TIMEOUT));
         xosd_set_font(x, get_optstring_field(L,
@@ -65,12 +98,26 @@ static int lx_new(lua_State *L) {
         xosd_set_align(x,
             align_of_str(L, get_optstring_field(L,
                     "align", LX_DEF_ALIGN)));
-        xosd_set_colour(x, get_optstring_field(L,
-                "colour", LX_DEF_COLOUR));
-        
-        lua_pop(L, 1);
-        
-        return 1;               /* leaving LuaXOSD userdata on stack */
+
+        /* For colors, check table for "colour", then "color". */
+        color = get_optstring_field(L, "shadow_colour", "");
+        if (strcmp(color, "") == 0)
+                color = get_optstring_field(L, "shadow_color",
+                    LX_DEF_SHADOW_COLOR);
+        xosd_set_shadow_colour(x, color);
+
+        color = get_optstring_field(L, "outline_colour", "");
+        if (strcmp(color, "") == 0)
+                color = get_optstring_field(L, "outline_color",
+                    LX_DEF_OUTLINE_COLOR);
+        xosd_set_outline_colour(x, color);
+
+        color = get_optstring_field(L, "colour", "");
+        if (strcmp(color, "") == 0)
+                color = get_optstring_field(L, "color", LX_DEF_COLOUR);
+        xosd_set_colour(x, color);
+
+        return 0;
 }
 
 
@@ -134,14 +181,16 @@ static int lx_tostring(lua_State *L) {
 static int lx_scroll(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
         int lines = luaL_checkint(L, 2);
-        xosd_scroll(osd->disp, lines);
-        return 0;
+
+        lua_pushboolean(L, xosd_scroll(osd->disp, lines) == 0);
+        return 1;
 }
 
 
 /* Get the number of lines. */
 static int lx_get_line_ct(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
+
         lua_pushinteger(L, xosd_get_number_lines(osd->disp));
         return 1;
 }
@@ -155,8 +204,9 @@ static int lx_get_line_ct(lua_State *L) {
 static int lx_set_timeout(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
         int t = luaL_checkint(L, 2);
-        xosd_set_timeout(osd->disp, t);
-        return 0;
+
+        lua_pushboolean(L, xosd_set_timeout(osd->disp, t) == 0);
+        return 1;
 }
 
 
@@ -164,9 +214,29 @@ static int lx_set_timeout(lua_State *L) {
 static int lx_set_colour(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
         const char *col = (const char*) luaL_checkstring(L, 2);
-        xosd_set_colour(osd->disp, col);
         
-        return 0;
+        lua_pushboolean(L, xosd_set_colour(osd->disp, col) == 0);
+        return 1;
+}
+
+
+/* Set the outline colo(u)r. (undocumented) */
+static int lx_set_outline_colour(lua_State *L) {
+        LuaXOSD* osd = check_xosd(L);
+        const char *col = (const char*) luaL_checkstring(L, 2);
+
+        lua_pushboolean(L, xosd_set_outline_colour(osd->disp, col) == 0);
+        return 1;
+}
+
+
+/* Set the shadow colo(u)r. (undocumented) */
+static int lx_set_shadow_colour(lua_State *L) {
+        LuaXOSD* osd = check_xosd(L);
+        const char *col = (const char*) luaL_checkstring(L, 2);
+
+        lua_pushboolean(L, xosd_set_shadow_colour(osd->disp, col) == 0);
+        return 1;
 }
 
 
@@ -175,9 +245,8 @@ static int lx_set_font(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
         const char *font = (const char*) luaL_checkstring(L, 2);
 
-        xosd_set_font(osd->disp, font);
-        
-        return 0;
+        lua_pushboolean(L, xosd_set_font(osd->disp, font) == 0);
+        return 1;
 }
 
 
@@ -185,8 +254,19 @@ static int lx_set_font(lua_State *L) {
 static int lx_set_shadow_offset(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
         int o = luaL_checkint(L, 2);
-        xosd_set_shadow_offset(osd->disp, o);
-        return 0;
+
+        lua_pushboolean(L, xosd_set_shadow_offset(osd->disp, o) == 0);
+        return 1;
+}
+
+
+/* Set the outline offset. */
+static int lx_set_outline_offset(lua_State *L) {
+        LuaXOSD* osd = check_xosd(L);
+        int o = luaL_checkint(L, 2);
+
+        lua_pushboolean(L, xosd_set_outline_offset(osd->disp, o) == 0);
+        return 1;
 }
 
 
@@ -214,10 +294,9 @@ static int lx_set_align(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
         const char *key = luaL_checkstring(L, 2); /* L, C, R */
         xosd_align align = align_of_str(L, key);
-        
-        if (align) xosd_set_align(osd->disp, align);
 
-        return 0;
+        lua_pushboolean(L, xosd_set_align(osd->disp, align) == 0);
+        return 1;
 }
 
 
@@ -225,8 +304,10 @@ static int lx_set_align(lua_State *L) {
 static int lx_set_vertical_offset(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
         int offset = luaL_checkint(L, 2);
-        xosd_set_vertical_offset (osd->disp, offset);
-        return 0;
+
+        lua_pushboolean(L, xosd_set_vertical_offset(osd->disp,
+                offset) == 0);
+        return 1;
 }
 
 
@@ -234,8 +315,10 @@ static int lx_set_vertical_offset(lua_State *L) {
 static int lx_set_horizontal_offset(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
         int offset = luaL_checkint(L, 2);
-        xosd_set_horizontal_offset (osd->disp, offset);
-        return 0;
+
+        lua_pushboolean(L, xosd_set_horizontal_offset(osd->disp,
+                offset) == 0);
+        return 1;
 }
 
 
@@ -243,15 +326,18 @@ static int lx_set_horizontal_offset(lua_State *L) {
 static int lx_set_pos(lua_State *L) {
         int xo, yo;
         LuaXOSD* osd = check_xosd(L);
+        int res;
 
         if (lua_type(L, -1) == LUA_TSTRING) {
                 const char* pos = lua_tostring(L, -1);
                 if (pos[0] == 'T') {
-                        xosd_set_pos(osd->disp, XOSD_top);
-                        return 0;
+                        lua_pushboolean(L, xosd_set_pos(osd->disp,
+                                XOSD_top) == 0);
+                        return 1;
                 } else if (pos[0] == 'B') {
-                        xosd_set_pos(osd->disp, XOSD_bottom);
-                        return 0;
+                        lua_pushboolean(L, xosd_set_pos(osd->disp,
+                                XOSD_bottom) == 0);
+                        return 1;
                 } else {
                         lua_pushstring(L, "Position must be T(op), B(ottom), or (x, y).");
                         lua_error(L);
@@ -260,9 +346,10 @@ static int lx_set_pos(lua_State *L) {
 
         xo = luaL_checkint(L, 2);
         yo = luaL_checkint(L, 3);
-        xosd_set_horizontal_offset (osd->disp, xo);
-        xosd_set_vertical_offset (osd->disp, yo);
-        return 0;
+        res = xosd_set_horizontal_offset (osd->disp, xo);
+        res = res | xosd_set_vertical_offset (osd->disp, yo);
+        lua_pushboolean(L, res == 0);
+        return 1;
 }
 
 
@@ -275,10 +362,11 @@ static int lx_display_string(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
         const char *s = (const char*) luaL_checkstring(L, 2);
         int blocking = lua_toboolean(L, 3);
+        int res = xosd_display(osd->disp, 0, XOSD_string, s);
 
-        xosd_display(osd->disp, 0, XOSD_string, s);
         if (blocking) xosd_wait_until_no_display(osd->disp);
-        return 0;
+        lua_pushboolean(L, res == 0);
+        return 1;
 }
 
 
@@ -287,6 +375,7 @@ static int lx_display_numeric(lua_State *L, xosd_command command) {
         LuaXOSD* osd = check_xosd(L);
         int perc = luaL_checkint(L, 2);
         int blocking;
+        int res;
 
         if (perc < 0 || perc > 100) {
                 lua_pushstring(L, "Error: Numeric display must be 0 < n < 100.");
@@ -295,9 +384,10 @@ static int lx_display_numeric(lua_State *L, xosd_command command) {
 
         blocking = lua_toboolean(L, 3);
 
-        xosd_display(osd->disp, 0, command, perc);
+        res = xosd_display(osd->disp, 0, command, perc);
         if (blocking) xosd_wait_until_no_display(osd->disp);
-        return 0;
+        lua_pushboolean(L, res == 0);
+        return 1;
 }
 
 
@@ -316,31 +406,37 @@ static int lx_display_slider(lua_State *L) {
 /* Block until done displaying. */
 static int lx_wait(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
-        xosd_wait_until_no_display(osd->disp);
-        return 0;
+        lua_pushboolean(L, xosd_wait_until_no_display(osd->disp) == 0);
+        return 1;
 }
 
 
 /* Show a hidden OSD. */
 static int lx_show(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
-        xosd_show(osd->disp);
-        return 0;
+        lua_pushboolean(L, xosd_show(osd->disp) == 0);
+        return 1;
 }
 
 
 /* Hide the OSD. */
 static int lx_hide(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
-        xosd_hide(osd->disp);
-        return 0;
+        lua_pushboolean(L, xosd_hide(osd->disp) == 0);
+        return 1;
 }
 
 
 /* Is it onscreen? */
 static int lx_is_onscreen(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
-        lua_pushboolean(L, xosd_is_onscreen(osd->disp));
+        int res = xosd_is_onscreen(osd->disp);
+        if (res == -1) {
+                lua_pushstring(L, "xosd_is_onscreen: unknown error.");
+                lua_error(L);
+        }
+
+        lua_pushboolean(L, res == 1);
         return 1;
 }
 
@@ -359,12 +455,17 @@ static const struct luaL_Reg xosd_metatable [] = {
         { "set_align", lx_set_align },
         { "set_color", lx_set_colour },
         { "set_colour", lx_set_colour },
+        { "set_shadow_color", lx_set_shadow_colour },
+        { "set_shadow_colour", lx_set_shadow_colour },
+        { "set_outline_color", lx_set_outline_colour },
+        { "set_outline_colour", lx_set_outline_colour },
         { "set_font", lx_set_font },
         { "set_timeout", lx_set_timeout },
         { "set_horizontal_offset", lx_set_horizontal_offset },
         { "set_vertical_offset", lx_set_vertical_offset },
         { "set_pos", lx_set_pos },
         { "set_shadow_offset", lx_set_shadow_offset },
+        { "set_outline_offset", lx_set_outline_offset },
         { "show", lx_show },
         { "hide", lx_hide },
         { "wait", lx_wait },
@@ -381,6 +482,7 @@ static const struct luaL_Reg lxosdlib[] = {
 };
 
 
+/* Register the C library with Lua. */
 int luaopen_xosd(lua_State *L) {
         luaL_newmetatable(L, "LuaXOSD");
 

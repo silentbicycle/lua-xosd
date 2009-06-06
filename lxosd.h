@@ -11,6 +11,9 @@ typedef struct LuaXOSD {
 #define		LX_DEF_X_OFFSET		20
 #define		LX_DEF_Y_OFFSET		20
 #define		LX_DEF_SHADOW_OFFSET	0
+#define		LX_DEF_SHADOW_COLOR	"black"
+#define		LX_DEF_OUTLINE_OFFSET	0
+#define		LX_DEF_OUTLINE_COLOR	"black"
 #define		LX_DEF_TIMEOUT		1
 #define		LX_DEF_FONT		"fixed"
 #define		LX_DEF_ALIGN		"L"
@@ -23,6 +26,7 @@ static const char* get_optstring_field(lua_State *L,
 static int get_line_ct(lua_State *L);
 static LuaXOSD* init_LuaXOSD(lua_State *L, int lines);
 static xosd_align align_of_str(lua_State *L, const char *key);
+static int set_defaults(lua_State *L, xosd* x);
 
 /* All direct C<->Lua functions have the type of
  * static int funcname(lua_State *L) .*/

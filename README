@@ -68,3 +68,12 @@ Other misc. methods:
   + is_onscreen(): Is it currently on-screen? 
   + scroll( lines )
   + get_line_ct(): Get the number of lines in the display.
+
+
+Most methods return a bool, for whether the operation was successful.
+
+
+TODO
+----
+  + Instead of returning bools, use error where appropriate.
+  + Document scrolling.
