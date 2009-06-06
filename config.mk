@@ -1,3 +1,8 @@
+# Project
+LIBNAME=	xosd
+LIBVER=		1.0
+TESTSUITE=	test.lua
+
 # Lua-specific paths and libraries
 LUA_VER=	5.1
 LUA=		/usr/local/bin/lua
@@ -25,6 +30,5 @@ LIBEXT=		.so
 LINT=		lint
 
 # Build targets
-LIBNAME=	xosd
-TESTSUITE=	test.lua
-INST_LIB=	${LIBNAME}${LIBEXT}
+LIBFILE=	${LIBNAME}${LIBEXT}.${LIBVER}
+INST_LIB=	${LIBFILE}
