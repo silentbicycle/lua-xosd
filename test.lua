@@ -6,14 +6,14 @@ x:print("no config", true)
 x = xosd.new()
 x:set_color("blue")
 x:set_pos(100, 200)
-x:set_font("-*-terminus-medium-*-*-*-24-*-*-*-*-*-*-*")
+x:set_font("-*-fixed-medium-*-*-*-24-*-*-*-*-*-*-*")
 x:set_shadow_offset(9)
 x:set_align("C")
 x:set_timeout(1)
 x:print("procedural config", true)
 
 x = xosd.new{ x=300, y=100, 
-              font="-*-terminus-medium-*-*-*-24-*-*-*-*-*-*-*",
+              font="-*-fixed-medium-*-*-*-24-*-*-*-*-*-*-*",
               timeout=2, shadow_offset=1, align="l", colour="white",
               lines=3 }
 x:print("table config", true)
@@ -29,8 +29,12 @@ x:set_pos("Bottom")
 x:print_slider(15, true)
 
 x = xosd.new{ font="-*-helvetica-medium-r-*-*-*-240-*-*-*-*-*-*",
-           shadow_offset=2, timeout=3, colour="white"}
+           shadow_offset=2, timeout=3, colour="white", align="c"}
 x:print("Congratulations! You're the next contestant on The Price is Right!")
 while x:is_onscreen() do
    -- altrenate blocking mechanism, could yield to coroutine here
 end
+
+x = xosd.new { timeout=2, align="c", color="steelblue", font="fixed" }
+x:set_pos("Bottom")
+x:print("If you could see those, all tests passed.", true)
