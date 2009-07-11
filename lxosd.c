@@ -1,25 +1,34 @@
 /* 
- * Copyright (c) 2009 Scott Vokes <scott@silentbicycle.com>
+ * Copyright (c) 2009 Scott Vokes <vokes.s@gmail.com>
  *  
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following
+ * conditions:
  *  
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *  
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
  */
 
 
 #include <stdlib.h>
 #include <string.h>
-#include <xosd.h>
 #include <lua.h>
 #include <lauxlib.h>
+#include <xosd.h>
 #include "lxosd.h"
 
 
@@ -95,6 +104,7 @@ static int lx_new(lua_State *L) {
 /* Set the defaults, using config table if provided. */
 static int set_defaults(lua_State *L, xosd* x) {
         const char* color;
+        xosd_align a = -1;
 
         xosd_set_horizontal_offset(x, get_optint_field(L,
                 "x", LX_DEF_X_OFFSET));
@@ -111,6 +121,9 @@ static int set_defaults(lua_State *L, xosd* x) {
         xosd_set_align(x,
             align_of_str(L, get_optstring_field(L,
                     "align", LX_DEF_ALIGN)));
+        a = pos_of_str(get_optstring_field(L, "pos", LX_DEF_POS));
+        xosd_set_pos(x, a);
+
 
         /* For colors, check table for "colour", then "color". */
         color = get_optstring_field(L, "shadow_colour", "");
@@ -338,29 +351,36 @@ static int lx_set_horizontal_offset(lua_State *L) {
 }
 
 
+/* Convert a str to a t/m/b pos, or -1 if none. */
+static xosd_pos pos_of_str(const char *key) {
+        switch (*key) {
+        case 't':
+        case 'T': return XOSD_top;
+        case 'm':
+        case 'M': return XOSD_middle;
+        case 'b':
+        case 'B': return XOSD_bottom;
+        default:  return -1;
+        }
+}
+
+
 /* Set position, takes "T", "M", "B", or (x, y). */
 static int lx_set_pos(lua_State *L) {
         int xo, yo;
         LuaXOSD* osd = check_xosd(L);
         const char* poskey;
-        char key;
         xosd_pos pos = -1;
 
         if (lua_type(L, -1) == LUA_TSTRING) {
                 poskey = lua_tostring(L, -1);
-                key = poskey[0];
-                if (key == 'T' || key == 't')
-                        pos = XOSD_top;
-                else if (key == 'M' || key == 'm')
-                        pos = XOSD_middle;
-                else if (key == 'B' || key == 'b')
-                        pos = XOSD_bottom;
+                pos = pos_of_str(poskey);
 
                 if (pos != -1) {
                         err_wrap(L, xosd_set_pos(osd->disp, pos), "xosd_set_pos");;
                         return 0;
                 } else {
-                        error(L, "Position must be T(op), B(ottom), or (x, y).");
+                        error(L, "Position must be T(op), M(iddle), B(ottom), or (x, y).");
                 }
         } else {
                 xo = luaL_checkint(L, 2);
@@ -378,12 +398,6 @@ static int lx_set_pos(lua_State *L) {
  * Displaying *
  **************/
 
-static void check_line_ct(lua_State *L, LuaXOSD* osd, int ct) {
-        if (ct < 1 || ct > xosd_get_number_lines(osd->disp))
-                error(L, "Invalid line index for xosd object.");
-}
-
-
 /* Display a string. */
 static int lx_display_string(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
@@ -391,7 +405,6 @@ static int lx_display_string(lua_State *L) {
         int blocking = lua_toboolean(L, 3);
         int line = luaL_optint(L, 4, 1);
 
-        check_line_ct(L, osd, line);
         err_wrap(L, xosd_display(osd->disp, line - 1, XOSD_string, s),
             xosd_error);
 
@@ -412,7 +425,6 @@ static int lx_display_numeric(lua_State *L, xosd_command command) {
         blocking = lua_toboolean(L, 3);
         line = luaL_optint(L, 4, 1);
 
-        check_line_ct(L, osd, line);
         err_wrap(L, xosd_display(osd->disp, line - 1, command, perc),
             xosd_error);
 

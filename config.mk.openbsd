@@ -1,3 +1,7 @@
+# Project
+LIBNAME=	xosd
+LIBVER=		0.3
+
 # Lua-specific paths and libraries
 LUA_VER=	5.1
 LUA=		/usr/local/bin/lua
@@ -20,10 +24,14 @@ INC=		-I/usr/X11R6/include/
 CFLAGS=		-Wall
 SHARED=		-shared -fPIC
 LIBEXT=		.so
+
+
+# Other tools, optional
 LINT=		lint
+TESTSUITE=	test.lua
 
 
 # Build targets
-LIBNAME=	xosd
-TESTSUITE=	test.lua
-INST_LIB=	${LIBNAME}${LIBEXT}
+LIBPREFIX=	l
+LIBFILE=	${LIBNAME}${LIBEXT}.${LIBVER}
+INST_LIB=	${LIBFILE}

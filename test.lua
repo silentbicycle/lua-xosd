@@ -35,8 +35,7 @@ x:print_slider(31, false)
 
 
 -- Another slider, displayed at the same time.
-x = xosd.new{ color="purple", timeout=1, shadow_offset = 0 }
-x:set_pos("Bottom")
+x = xosd.new{ color="purple", pos="Bottom", timeout=1, shadow_offset = 0 }
 x:print_slider(15, true)
 
 
@@ -56,12 +55,10 @@ x = xosd.new{ lines=5, color="#66ddaa", shadow_color="black", shadow_offset=1 }
 x:set_timeout(1)
 x:set_align("L")
 x:print("Progress", false)
-do
-   local i=0
-   while i < 100 do
-      i = i + math.random(40)
-      x:print_percent(math.min(i, 100), true, 2)
-   end
+local i=0
+while i < 100 do
+   i = i + math.random(40)
+   x:print_percent(math.min(i, 100), true, 2)
 end
 x:scroll(1)
 x:print("Complete!", true, 1)

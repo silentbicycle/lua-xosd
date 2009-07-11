@@ -3,6 +3,11 @@ Lua-XOSD
 
 This is a Lua wrapper for the XOSD library.
 
+The code for Lua-XOSD is released under the MIT License.
+
+Please send comments, suggestions, bug reports, etc. to
+<vokes.s@gmail.com> .
+
 
 Building and installation
 -------------------------
@@ -32,14 +37,15 @@ First,
 new can be passed an optional table with the following settings:
 
   + x and y coordinates ("x", "y")
-  + colors ("color", "shadow_color", "outline_color", and all can
-           instead be spelled "colour", as a brief nod to i18n.)
+  + colors ("color", "shadow_color", "outline_color")
+           All can be spelled "colour", as a brief nod to i18n.
            Colors can be specified by name (see *rgb.txt* in your
            X distribution) or by hex triplets such as "#66ddaa".
   + offsets ("shadow_offset", "outline_offset")
   + "timeout" (in seconds)
   + "font" (a name, e.g. "fixed", or values used by e.g. xfontsel)
-  + "align" ("L" / "C" / "R", case insensitive)
+  + "align" ("L", "C", "R", case insensitive - left, center, right)
+  + "pos" ("T", "M", "B", case insensitive - top, middle, bottom)
 
 
 For example:
@@ -84,8 +90,3 @@ Other misc. methods:
 
 
 For usage examples, see *test.lua*.
-
-
-TODO
-----
-  + Document scrolling.
