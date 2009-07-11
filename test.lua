@@ -52,7 +52,7 @@ end
 
 
 -- Multiline progress bar display, with hex-triplet-style color.
-x = xosd.new{ lines=5, color="#66ddaa" }
+x = xosd.new{ lines=5, color="#66ddaa", shadow_color="black", shadow_offset=1 }
 x:set_timeout(1)
 x:set_align("L")
 x:print("Progress", false)
@@ -78,4 +78,5 @@ x:scroll(1)
 x:print("Congratulations", true, 2)
 x:scroll(1)
 x:print("All tests passed.", true, 3)
+x:print("", true, 3)
 

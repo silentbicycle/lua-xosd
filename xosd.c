@@ -393,7 +393,7 @@ static int lx_display_string(lua_State *L) {
 
         check_line_ct(L, osd, line);
         err_wrap(L, xosd_display(osd->disp, line - 1, XOSD_string, s),
-            "unknown error in xosd_display");
+            xosd_error);
 
         if (blocking) xosd_wait_until_no_display(osd->disp);
         return 0;
@@ -414,7 +414,7 @@ static int lx_display_numeric(lua_State *L, xosd_command command) {
 
         check_line_ct(L, osd, line);
         err_wrap(L, xosd_display(osd->disp, line - 1, command, perc),
-            "unknown error in xosd_display");
+            xosd_error);
 
         if (blocking) xosd_wait_until_no_display(osd->disp);
         return 0;
@@ -463,7 +463,7 @@ static int lx_is_onscreen(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
         int res = xosd_is_onscreen(osd->disp);
         if (res == -1) {
-                error(L, "xosd_is_onscreen: unknown error.");
+                error(L, xosd_error);
         }
 
         lua_pushboolean(L, res == 1);
