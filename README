@@ -34,10 +34,11 @@ new can be passed an optional table with the following settings:
   + x and y coordinates ("x", "y")
   + colors ("color", "shadow_color", "outline_color", and all can
            instead be spelled "colour", as a brief nod to i18n.)
-           For a color list, see *rgb.txt* in your X distribution.
+           Colors can be specified by name (see *rgb.txt* in your
+           X distribution) or by hex triplets such as "#66ddaa".
   + offsets ("shadow_offset", "outline_offset")
   + "timeout" (in seconds)
-  + "font" (a name, e.g. "fixed", or xfontsel-style)
+  + "font" (a name, e.g. "fixed", or values used by e.g. xfontsel)
   + "align" ("L" / "C" / "R", case insensitive)
 
 
@@ -59,17 +60,18 @@ The following methods can be used to change those settings later:
   + set_timeout( seconds )
   + set_horizontal_offset( pixels )
   + set_vertical_offset( pixels )
-  + set_pos( (x, y) OR "Top" OR "Bottom" )
+  + set_pos( (x, y) OR "Top", "Middle", or "Bottom" )
   + set_shadow_offset( pixels )
   + set_outline_offset( pixels )
 
 
 Displaying is controlled by the following methods:
 
-  + print( string, [blocking] ): 
+  + print( string, [blocking, line] ): 
     if blocking, pause until timeout, otherwise display is asynchronous.
-  + print_percent( percent, [blocking] ): percent is between 0 and 100.
-  + print_slider( percent, [blocking] )
+    Line count is for multi-line displays, and defaults to 1.
+  + print_percent( percent, [blocking, line] ): percent is between 0 and 100.
+  + print_slider( percent, [blocking, line] )
   + show()
   + hide()
   + wait(): Wait until timeout.
@@ -77,8 +79,8 @@ Displaying is controlled by the following methods:
 
 Other misc. methods:
   + is_onscreen(): Is it currently on-screen? 
-  + scroll( lines )
-  + get_line_ct(): Get the number of lines in the display.
+  + get_line_count(): Get the number of lines in the display.
+  + scroll( lines ): Scroll a multi-line display.
 
 
 For usage examples, see *test.lua*.

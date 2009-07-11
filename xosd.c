@@ -78,7 +78,7 @@ static int lx_new(lua_State *L) {
 
         if (lua_gettop(L) == 0) lua_newtable(L);
 
-        lines = get_line_ct(L);        /* s: table */
+        lines = get_line_ct(L);     /* s: table */
         d = init_LuaXOSD(L, lines);    /* s: table LuaXOSD */
         lua_pushvalue(L, -2);          /* s: table LuaXOSD table */
         lua_remove(L, -3);             /* s: LuaXOSD table */
@@ -201,7 +201,7 @@ static int lx_scroll(lua_State *L) {
 
 
 /* Get the number of lines. */
-static int lx_get_line_ct(lua_State *L) {
+static int lx_get_line_count(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
 
         lua_pushinteger(L, xosd_get_number_lines(osd->disp));
@@ -338,33 +338,38 @@ static int lx_set_horizontal_offset(lua_State *L) {
 }
 
 
-/* Set position, takes "T", "B", or (x, y). */
+/* Set position, takes "T", "M", "B", or (x, y). */
 static int lx_set_pos(lua_State *L) {
         int xo, yo;
         LuaXOSD* osd = check_xosd(L);
+        const char* poskey;
+        char key;
+        xosd_pos pos = -1;
 
         if (lua_type(L, -1) == LUA_TSTRING) {
-                const char* pos = lua_tostring(L, -1);
-                if (pos[0] == 'T') {
-                        err_wrap(L, xosd_set_pos(osd->disp,
-                                XOSD_top), "xosd_set_pos");
-                        return 0;
-                } else if (pos[0] == 'B') {
-                        err_wrap(L, xosd_set_pos(osd->disp,
-                                XOSD_bottom), "xosd_set_pos");
+                poskey = lua_tostring(L, -1);
+                key = poskey[0];
+                if (key == 'T' || key == 't')
+                        pos = XOSD_top;
+                else if (key == 'M' || key == 'm')
+                        pos = XOSD_middle;
+                else if (key == 'B' || key == 'b')
+                        pos = XOSD_bottom;
+
+                if (pos != -1) {
+                        err_wrap(L, xosd_set_pos(osd->disp, pos), "xosd_set_pos");;
                         return 0;
                 } else {
-                        error(L, "Position must be T(op), "
-                            "B(ottom), or (x, y).");
+                        error(L, "Position must be T(op), B(ottom), or (x, y).");
                 }
+        } else {
+                xo = luaL_checkint(L, 2);
+                yo = luaL_checkint(L, 3);
+                err_wrap(L, xosd_set_horizontal_offset(osd->disp, xo),
+                    "xosd_set_horizontal_offset");
+                err_wrap(L, xosd_set_vertical_offset(osd->disp, yo),
+                    "xosd_set_vertical_offset");
         }
-
-        xo = luaL_checkint(L, 2);
-        yo = luaL_checkint(L, 3);
-        err_wrap(L, xosd_set_horizontal_offset(osd->disp, xo),
-            "xosd_set_horizontal_offset");
-        err_wrap(L, xosd_set_vertical_offset(osd->disp, yo),
-            "xosd_set_vertical_offset");
         return 0;
 }
 
@@ -373,13 +378,22 @@ static int lx_set_pos(lua_State *L) {
  * Displaying *
  **************/
 
+static void check_line_ct(lua_State *L, LuaXOSD* osd, int ct) {
+        if (ct < 1 || ct > xosd_get_number_lines(osd->disp))
+                error(L, "Invalid line index for xosd object.");
+}
+
+
 /* Display a string. */
 static int lx_display_string(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
         const char *s = (const char*) luaL_checkstring(L, 2);
         int blocking = lua_toboolean(L, 3);
-        err_wrap(L, xosd_display(osd->disp, 0, XOSD_string, s),
-            "xosd_display");
+        int line = luaL_optint(L, 4, 1);
+
+        check_line_ct(L, osd, line);
+        err_wrap(L, xosd_display(osd->disp, line - 1, XOSD_string, s),
+            "unknown error in xosd_display");
 
         if (blocking) xosd_wait_until_no_display(osd->disp);
         return 0;
@@ -390,16 +404,18 @@ static int lx_display_string(lua_State *L) {
 static int lx_display_numeric(lua_State *L, xosd_command command) {
         LuaXOSD* osd = check_xosd(L);
         int perc = luaL_checkint(L, 2);
-        int blocking;
+        int blocking, line;
 
-        if (perc < 0 || perc > 100) {
+        if (perc < 0 || perc > 100)
                 error(L, "Error: Numeric display must be 0 < n < 100.");
-        }
 
         blocking = lua_toboolean(L, 3);
+        line = luaL_optint(L, 4, 1);
 
-        err_wrap(L, xosd_display(osd->disp, 0, command, perc),
-            "xosd_display");
+        check_line_ct(L, osd, line);
+        err_wrap(L, xosd_display(osd->disp, line - 1, command, perc),
+            "unknown error in xosd_display");
+
         if (blocking) xosd_wait_until_no_display(osd->disp);
         return 0;
 }
@@ -465,7 +481,7 @@ static const struct luaL_Reg xosd_metatable [] = {
         { "print_slider", lx_display_slider },
         { "destroy", lx_destroy },
         { "scroll", lx_scroll },
-        { "get_line_ct", lx_get_line_ct },
+        { "get_line_count", lx_get_line_count },
         { "set_align", lx_set_align },
         { "set_color", lx_set_colour },
         { "set_colour", lx_set_colour },
