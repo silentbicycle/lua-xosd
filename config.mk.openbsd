@@ -29,6 +29,7 @@ LIBEXT=		.so
 # Other tools, optional
 LINT=		lint
 TESTSUITE=	test.lua
+ARCHNAME= 	lua-${LIBNAME}
 
 
 # Build targets
