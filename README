@@ -74,19 +74,20 @@ The following methods can be used to change those settings later:
 Displaying is controlled by the following methods:
 
   + print( string, [blocking, line] ): 
-    if blocking, pause until timeout, otherwise display is asynchronous.
-    Line count is for multi-line displays, and defaults to 1.
-  + print_percent( percent, [blocking, line] ): percent is between 0 and 100.
+        If blocking, pause until timeout, otherwise display is asynchronous.
+        Line count is for multi-line displays, and defaults to 1.
+  + print_percent( percent, [blocking, line] ):
+        Percent is between 0 and 100.
   + print_slider( percent, [blocking, line] )
   + show()
   + hide()
-  + wait(): Wait until timeout.
+  + wait():                   Wait (blocking) until timeout.
 
 
 Other misc. methods:
-  + is_onscreen(): Is it currently on-screen? 
-  + get_line_count(): Get the number of lines in the display.
-  + scroll( lines ): Scroll a multi-line display.
+  + is_onscreen():            Is it currently on-screen? 
+  + get_line_count():         Get the number of lines in the display.
+  + scroll( lines ):          Scroll a multi-line display.
 
 
 For usage examples, see *test.lua*.
