@@ -3,7 +3,7 @@
 all:	${LIBFILE}
 
 clean:
-	rm -f ${LIBNAME}${LIBEXT}* ${ARCHNAME}*.tar.gz ${ARCHNAME}*.zip
+	rm -f ${LIBNAME}${LIBEXT}* ${ARCHNAME}*.tar.gz ${ARCHNAME}*.zip *.core
 
 ${LIBFILE}: ${LIBPREFIX}${LIBNAME}.c
 	${CC} -o $@ $> ${CFLAGS} ${SHARED} ${LUA_FLAGS} \
