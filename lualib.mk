@@ -6,7 +6,7 @@ clean:
 	rm -f ${LIBNAME}${LIBEXT}* ${ARCHNAME}*.tar.gz ${ARCHNAME}*.zip *.core
 
 ${LIBFILE}: ${LIBPREFIX}${LIBNAME}.c
-	${CC} -o $@ $> ${CFLAGS} ${SHARED} ${LUA_FLAGS} \
+	${CC} -o $@ ${LIBPREFIX}${LIBNAME}.c ${CFLAGS} ${SHARED} ${LUA_FLAGS} \
 	${INC} ${LIB_PATHS} ${LIBS}
 	ln -fs ${LIBNAME}${LIBEXT}.${LIBVER} ${LIBNAME}${LIBEXT}
 
