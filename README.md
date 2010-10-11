@@ -85,6 +85,7 @@ Displaying is controlled by the following methods:
 
 
 Other misc. methods:
+
   + is_onscreen():            Is it currently on-screen? 
   + get_line_count():         Get the number of lines in the display.
   + scroll( lines ):          Scroll a multi-line display.
