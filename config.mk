@@ -12,8 +12,8 @@ LUA_FLAGS=	$(LUA_INC) $(LUA_LIBPATH) $(LUA_LIBS)
 
 
 # Where compiled libraries and .lua sources install.
-LUA_DEST_LIB=	/usr/lib/lua/${LUA_VER}/
-LUA_DEST_LUA=	/usr/share/lua/${LUA_VER}/
+LUA_DEST_LIB=	/usr/local/lib/lua/$(LUA_VER)/
+LUA_DEST_LUA=	/usr/local/share/lua/$(LUA_VER)/
 
 
 # Additional C settings
@@ -29,10 +29,10 @@ LIBEXT=		.so
 # Other tools, optional
 LINT=		lint
 TESTSUITE=	test.lua
-ARCHNAME= 	lua-${LIBNAME}
+ARCHNAME= 	lua-$(LIBNAME)
 
 
 # Build targets
 LIBPREFIX=	l
-LIBFILE=	${LIBNAME}${LIBEXT}.${LIBVER}
-INST_LIB=	${LIBFILE}
+LIBFILE=	$(LIBNAME)$(LIBEXT).$(LIBVER)
+INST_LIB=	$(LIBFILE)
