@@ -14,7 +14,7 @@ Building and installation
 
 In order to build and install lua-xosd, you will need:
 
-  + [Lua][] and its header files (tested with 5.1.4, 5.x *should* work)
+  + [Lua][] 5.1 - 5.3 and its header files (tested with 5.1.5, 5.2.4 and 5.3.3)
   + [XOSD][], naturally.
 
 [Lua]: http://lua.org
@@ -31,7 +31,7 @@ Usage
 
 First,
 
-    require "xosd"
+    local xosd = require "xosd"
     disp = xosd.new()
 
 new can be passed an optional table with the following settings:

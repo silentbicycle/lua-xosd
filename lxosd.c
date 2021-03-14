@@ -23,7 +23,6 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 #include <stdlib.h>
 #include <string.h>
 #include <lua.h>
@@ -36,7 +35,7 @@
 static int get_optint_field(lua_State *L, const char* key, int def) {
         int res;
         lua_getfield(L, -1, key);
-        res = luaL_optint(L, -1, def);
+        res = (int)luaL_optinteger(L, -1, def);
         /* printf("%s -> %d (default %d)\n", key, res, def); */
         lua_pop(L, 1);
         return res;
@@ -153,7 +152,7 @@ static int get_line_ct(lua_State *L) {
 
         if (lua_istable(L, -1)) {
                 lua_getfield(L, -1, "lines");
-                res = luaL_optint(L, -1, 1);
+                res = (int)luaL_optinteger(L, -1, 1);
                 lua_pop(L, 1);
         } else {
                 error(L, "Error getting line count.");
@@ -206,7 +205,7 @@ static int lx_tostring(lua_State *L) {
 /* Scroll. */
 static int lx_scroll(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
-        int lines = luaL_checkint(L, 2);
+        int lines = (int)luaL_checkinteger(L, 2);
 
         err_wrap(L, xosd_scroll(osd->disp, lines), "xosd_scroll");
         return 0;
@@ -229,7 +228,7 @@ static int lx_get_line_count(lua_State *L) {
 /* Set the timeout. */
 static int lx_set_timeout(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
-        int t = luaL_checkint(L, 2);
+        int t = (int)luaL_checkinteger(L, 2);
 
         err_wrap(L, xosd_set_timeout(osd->disp, t), "xosd_set_timeout");
         return 0;
@@ -281,7 +280,7 @@ static int lx_set_font(lua_State *L) {
 /* Set the shadow offset. */
 static int lx_set_shadow_offset(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
-        int o = luaL_checkint(L, 2);
+        int o = (int)luaL_checkinteger(L, 2);
 
         err_wrap(L, xosd_set_shadow_offset(osd->disp, o),
             "xosd_set_shadow_offset");
@@ -292,7 +291,7 @@ static int lx_set_shadow_offset(lua_State *L) {
 /* Set the outline offset. */
 static int lx_set_outline_offset(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
-        int o = luaL_checkint(L, 2);
+        int o = (int)luaL_checkinteger(L, 2);
 
         err_wrap(L, xosd_set_outline_offset(osd->disp, o),
             "xosd_set_outline_offset");
@@ -332,7 +331,7 @@ static int lx_set_align(lua_State *L) {
 /* Set the vertical offset. */
 static int lx_set_vertical_offset(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
-        int offset = luaL_checkint(L, 2);
+        int offset = (int)luaL_checkinteger(L, 2);
 
         err_wrap(L, xosd_set_vertical_offset(osd->disp,
                 offset), "xosd_set_vertical_offset");
@@ -343,7 +342,7 @@ static int lx_set_vertical_offset(lua_State *L) {
 /* Set the horizontal offset. */
 static int lx_set_horizontal_offset(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
-        int offset = luaL_checkint(L, 2);
+        int offset = (int)luaL_checkinteger(L, 2);
 
         err_wrap(L, xosd_set_horizontal_offset(osd->disp,
                 offset), "xosd_set_horizontal_offset");
@@ -383,8 +382,8 @@ static int lx_set_pos(lua_State *L) {
                         error(L, "Position must be T(op), M(iddle), B(ottom), or (x, y).");
                 }
         } else {
-                xo = luaL_checkint(L, 2);
-                yo = luaL_checkint(L, 3);
+                xo = (int)luaL_checkinteger(L, 2);
+                yo = (int)luaL_checkinteger(L, 3);
                 err_wrap(L, xosd_set_horizontal_offset(osd->disp, xo),
                     "xosd_set_horizontal_offset");
                 err_wrap(L, xosd_set_vertical_offset(osd->disp, yo),
@@ -403,7 +402,7 @@ static int lx_display_string(lua_State *L) {
         LuaXOSD* osd = check_xosd(L);
         const char *s = (const char*) luaL_checkstring(L, 2);
         int blocking = lua_toboolean(L, 3);
-        int line = luaL_optint(L, 4, 1);
+        int line = (int)luaL_optinteger(L, 4, 1);
 
         err_wrap(L, xosd_display(osd->disp, line - 1, XOSD_string, s),
             xosd_error);
@@ -416,14 +415,14 @@ static int lx_display_string(lua_State *L) {
 /* Common code for displaying a numeric value. */
 static int lx_display_numeric(lua_State *L, xosd_command command) {
         LuaXOSD* osd = check_xosd(L);
-        int perc = luaL_checkint(L, 2);
+        int perc = (int)luaL_checkinteger(L, 2);
         int blocking, line;
 
         if (perc < 0 || perc > 100)
                 error(L, "Error: Numeric display must be 0 < n < 100.");
 
         blocking = lua_toboolean(L, 3);
-        line = luaL_optint(L, 4, 1);
+        line = (int)luaL_optinteger(L, 4, 1);
 
         err_wrap(L, xosd_display(osd->disp, line - 1, command, perc),
             xosd_error);
@@ -517,13 +516,6 @@ static const struct luaL_Reg xosd_metatable [] = {
         { NULL, NULL },
 };        
 
-
-static const struct luaL_Reg lxosdlib[] = {
-        { "new", lx_new },
-        { NULL, NULL },
-};
-
-
 /* Register the C library with Lua. */
 int luaopen_xosd(lua_State *L) {
         luaL_newmetatable(L, "LuaXOSD");
@@ -531,8 +523,15 @@ int luaopen_xosd(lua_State *L) {
         /* metatable.__index -> metatable */
         lua_pushvalue(L, -1);   /* dup */
         lua_setfield(L, -2, "__index");
+#if LUA_VERSION_NUM > 501
+        luaL_setfuncs(L, xosd_metatable, 0);
+#else
         luaL_register(L, NULL, xosd_metatable);
-        
-        luaL_register(L, "xosd", lxosdlib);
+#endif
+
+        lua_createtable(L, 1, 0);
+        lua_pushcfunction(L, lx_new);
+        lua_setfield(L, -2, "new");
+
         return 1;
 }

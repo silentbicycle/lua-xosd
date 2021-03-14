@@ -6,9 +6,9 @@ LIBVER=		0.3
 LUA_VER=	5.1
 LUA=		/usr/bin/lua
 LUA_LIBPATH=	-L/usr/lib/
-LUA_LIBS=	-llua5.1 -lm
-LUA_INC=	-I/usr/include/lua5.1/
-LUA_FLAGS=	${LUA_INC} ${LUA_LIBPATH} ${LUA_LIBS}
+LUA_LIBS=	-llua$(LUA_VER) -lm
+LUA_INC=	-I/usr/include/lua$(LUA_VER)/
+LUA_FLAGS=	$(LUA_INC) $(LUA_LIBPATH) $(LUA_LIBS)
 
 
 # Where compiled libraries and .lua sources install.
