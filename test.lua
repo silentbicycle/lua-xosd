@@ -1,4 +1,4 @@
-require "xosd"
+local xosd = require "xosd"
 
 -- No configuration.
 x = xosd.new()

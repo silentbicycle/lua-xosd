@@ -1,4 +1,4 @@
-require "xosd"
+local xosd = require "xosd"
 
 -- That's it. 
 --
